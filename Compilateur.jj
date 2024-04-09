@@ -1,0 +1,54 @@
+// fichier Compilateur.jj
+PARSER_BEGIN(Compilateur)
+import java.io.InputStream;
+
+public class Compilateur {
+    public static void main(String args[]) {
+        try {
+            System.out.print("Tapez une Expression : ");
+            Compilateur parseur = new Compilateur(System.in);
+            parseur.mainNT();
+            System.out.println("C'est bien une expression arithmétique !!");
+            //Compilateur.main();
+        } catch (TokenMgrError e) {
+                    System.out.println("Ceci n'est pas une expression arithm\u00e9tique :"+e);
+                } catch (ParseException e) {
+                    System.out.println("Ceci n'est pas une expression arithm\u00e9tique :"+e);
+    }           }
+}
+PARSER_END(Compilateur)
+
+SKIP :
+{ " " | "\t" }
+
+TOKEN :
+{ < NOMBRE: ["1"-"9"] (["0"-"9"])* >
+| < EOL: "\n" >
+}
+
+void mainNT () :
+{}
+{ expression() <EOL> }
+
+void expression () :
+{}
+{ terme() (
+    "+" terme()
+    | "-" terme()
+)*
+}
+
+void terme () :
+{}
+{ facteur() (
+    "*" facteur()
+    | "/" facteur()
+)*
+}
+
+void facteur () :
+{}
+{ "(" expression() ")"
+| "-" facteur()
+| <NOMBRE>
+}
