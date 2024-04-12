@@ -1,5 +1,5 @@
-
 PARSER_BEGIN(Compilateur)
+import AST.*;
 import java.io.InputStream;
 
 public class Compilateur {
@@ -7,12 +7,12 @@ public class Compilateur {
         try {
             System.out.print("Tapez une Expression : ");
             Compilateur parseur = new Compilateur(System.in);
-            parseur.mainNT();
+            ExpressionA ast = parseur.mainNT();
+            System.out.println("AST calculé : \n" + ast.toAssembly()+"Halt");
             System.out.println("C'est bien une expression arithmétique !!");
-            //Compilateur.main();
         } catch (TokenMgrError e) {
                     System.out.println("Ceci n'est pas une expression arithm\u00e9tique :"+e);
-                } catch (ParseException e) {
+                } catch (ParseException e){
                     System.out.println("Ceci n'est pas une expression arithm\u00e9tique :"+e);
     }           }
 }
@@ -26,29 +26,42 @@ TOKEN :
 | < EOL: "\n" >
 }
 
-void mainNT () :
-{}
-{ expression() <EOL> }
-
-void expression () :
-{}
-{ terme() (
-    "+" terme()
-    | "-" terme()
-)*
+ExpressionA mainNT () :
+{
+    ExpressionA expression;
+}
+{
+    expression=expression() <EOL> { return expression; }
+}
+ExpressionA expression () :
+{
+    ExpressionA gauche, droite;
+}
+{
+    gauche=terme() (
+        "+" droite=terme() { gauche = new Plus(gauche, droite); }
+        | "-" droite=terme() { gauche = new Moins(gauche, droite); }
+    )*
+    { return gauche; }
+}
+ExpressionA terme () :
+{
+    ExpressionA gauche, droite;
+}
+{
+    gauche=facteur() (
+        "*" droite=facteur() { gauche = new Mult(gauche, droite); }
+        | "/" droite=facteur() { gauche = new Div(gauche, droite); }
+    )*
+    { return gauche; }
 }
 
-void terme () :
-{}
-{ facteur() (
-    "*" facteur()
-    | "/" facteur()
-)*
+ExpressionA facteur() :
+{
+    ExpressionA expr;
 }
-
-void facteur () :
-{}
-{ "(" expression() ")"
-| "-" facteur()
-| <NOMBRE>
+{
+    "(" expr=expression() ")" { return expr; }
+    | "-" expr=facteur() { return new Neg(expr); } // Construit un nœud Neg
+    | <NOMBRE> { return new Num(Integer.parseInt(token.image)); } // Construit un nœud Num
 }

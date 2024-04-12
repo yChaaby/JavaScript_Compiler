@@ -37,7 +37,7 @@ for file in "${files[@]}"; do
         break
     fi
 done
-# this if statement used to delete .java .class files (added files that we gonna not push everytime )
+# this "if" statement used to delete .java .class files (added files that we gonna not push everytime )
 if [ $# -eq 1 ]; then
   exit 1
 fi
