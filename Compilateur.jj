@@ -23,6 +23,8 @@ SKIP :
 
 TOKEN :
 { < NOMBRE: ["1"-"9"] (["0"-"9"])* >
+| < FLOAT: (["0"-"9"])+ "." (["0"-"9"])+ >
+| < BOOLEAN: "True" | "False">
 | < EOL: "\n" >
 }
 
@@ -33,15 +35,33 @@ ExpressionA mainNT () :
 {
     expression=expression() <EOL> { return expression; }
 }
-ExpressionA expression () :
+ExpressionA expression() :
+{
+    ExpressionA gauche, droite;
+}
+{
+    gauche=comp() (
+              "==" droite=comp()  { gauche = new Egal(gauche, droite); }
+            | ">=" droite=comp() {  gauche = new GrEgNb(gauche, droite); }
+            | ">"  droite=comp()  { gauche = new GrStNb(gauche, droite);}
+            | "<"  droite=comp()  { gauche = new LoStNb(gauche, droite);}
+            | "<=" droite=comp()  { gauche = new LoEqNb(gauche, droite); }
+            | "!=" droite=comp()  { gauche = new NotEql(gauche, droite); }
+
+
+    )*
+    { return gauche; }
+}
+
+ExpressionA comp() :
 {
     ExpressionA gauche, droite;
 }
 {
     gauche=terme() (
-        "+" droite=terme() { gauche = new Plus(gauche, droite); }
+         "+" droite=terme() { gauche = new Plus(gauche, droite); }
         | "-" droite=terme() { gauche = new Moins(gauche, droite); }
-    )*
+         )*
     { return gauche; }
 }
 ExpressionA terme () :
@@ -50,8 +70,9 @@ ExpressionA terme () :
 }
 {
     gauche=facteur() (
-        "*" droite=facteur() { gauche = new Mult(gauche, droite); }
-        | "/" droite=facteur() { gauche = new Div(gauche, droite); }
+          "*" droite=facteur() { gauche = new Mult(gauche, droite); }
+        | "/" droite=facteur() { gauche = new Div(gauche, droite);}
+        | "%" droite=facteur() { gauche = new Modulo(gauche, droite); }
     )*
     { return gauche; }
 }
@@ -61,7 +82,10 @@ ExpressionA facteur() :
     ExpressionA expr;
 }
 {
-    "(" expr=expression() ")" { return expr; }
-    | "-" expr=facteur() { return new Neg(expr); } // Construit un nœud Neg
-    | <NOMBRE> { return new Num(Integer.parseInt(token.image)); } // Construit un nœud Num
+      "(" expr=expression() ")" { return expr; }
+    | "-" expr=facteur() { return new Neg(expr); }
+    | "!" expr=facteur() { return new Not(expr); }// Construit un nœud not
+    | <NOMBRE> { return new Num(Integer.parseInt(token.image));}
+    | <FLOAT> { return new FloatT(Float.parseFloat(token.image));}
+    | <BOOLEAN> { return new Bool(Boolean.parseBoolean(token.image));}// Construit un nœud Num
 }

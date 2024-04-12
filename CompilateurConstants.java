@@ -11,7 +11,11 @@ public interface CompilateurConstants {
   /** RegularExpression Id. */
   int NOMBRE = 3;
   /** RegularExpression Id. */
-  int EOL = 4;
+  int FLOAT = 4;
+  /** RegularExpression Id. */
+  int BOOLEAN = 5;
+  /** RegularExpression Id. */
+  int EOL = 6;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -22,13 +26,23 @@ public interface CompilateurConstants {
     "\" \"",
     "\"\\t\"",
     "<NOMBRE>",
+    "<FLOAT>",
+    "<BOOLEAN>",
     "\"\\n\"",
+    "\"==\"",
+    "\">=\"",
+    "\">\"",
+    "\"<\"",
+    "\"<=\"",
+    "\"!=\"",
     "\"+\"",
     "\"-\"",
     "\"*\"",
     "\"/\"",
+    "\"%\"",
     "\"(\"",
     "\")\"",
+    "\"!\"",
   };
 
 }

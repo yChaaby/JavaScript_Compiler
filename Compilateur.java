@@ -25,12 +25,16 @@ public class Compilateur implements CompilateurConstants {
 }
 
   static final public ExpressionA expression() throws ParseException {ExpressionA gauche, droite;
-    gauche = terme();
+    gauche = comp();
     label_1:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 5:
-      case 6:{
+      case 7:
+      case 8:
+      case 9:
+      case 10:
+      case 11:
+      case 12:{
         ;
         break;
         }
@@ -39,16 +43,40 @@ public class Compilateur implements CompilateurConstants {
         break label_1;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 5:{
-        jj_consume_token(5);
-        droite = terme();
-gauche = new Plus(gauche, droite);
+      case 7:{
+        jj_consume_token(7);
+        droite = comp();
+gauche = new Egal(gauche, droite);
         break;
         }
-      case 6:{
-        jj_consume_token(6);
-        droite = terme();
-gauche = new Moins(gauche, droite);
+      case 8:{
+        jj_consume_token(8);
+        droite = comp();
+gauche = new GrEgNb(gauche, droite);
+        break;
+        }
+      case 9:{
+        jj_consume_token(9);
+        droite = comp();
+gauche = new GrStNb(gauche, droite);
+        break;
+        }
+      case 10:{
+        jj_consume_token(10);
+        droite = comp();
+gauche = new LoStNb(gauche, droite);
+        break;
+        }
+      case 11:{
+        jj_consume_token(11);
+        droite = comp();
+gauche = new LoEqNb(gauche, droite);
+        break;
+        }
+      case 12:{
+        jj_consume_token(12);
+        droite = comp();
+gauche = new NotEql(gauche, droite);
         break;
         }
       default:
@@ -61,13 +89,13 @@ gauche = new Moins(gauche, droite);
     throw new Error("Missing return statement in function");
 }
 
-  static final public ExpressionA terme() throws ParseException {ExpressionA gauche, droite;
-    gauche = facteur();
+  static final public ExpressionA comp() throws ParseException {ExpressionA gauche, droite;
+    gauche = terme();
     label_2:
     while (true) {
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 7:
-      case 8:{
+      case 13:
+      case 14:{
         ;
         break;
         }
@@ -76,16 +104,16 @@ gauche = new Moins(gauche, droite);
         break label_2;
       }
       switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-      case 7:{
-        jj_consume_token(7);
-        droite = facteur();
-gauche = new Mult(gauche, droite);
+      case 13:{
+        jj_consume_token(13);
+        droite = terme();
+gauche = new Plus(gauche, droite);
         break;
         }
-      case 8:{
-        jj_consume_token(8);
-        droite = facteur();
-gauche = new Div(gauche, droite);
+      case 14:{
+        jj_consume_token(14);
+        droite = terme();
+gauche = new Moins(gauche, droite);
         break;
         }
       default:
@@ -98,19 +126,69 @@ gauche = new Div(gauche, droite);
     throw new Error("Missing return statement in function");
 }
 
+  static final public ExpressionA terme() throws ParseException {ExpressionA gauche, droite;
+    gauche = facteur();
+    label_3:
+    while (true) {
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case 15:
+      case 16:
+      case 17:{
+        ;
+        break;
+        }
+      default:
+        jj_la1[4] = jj_gen;
+        break label_3;
+      }
+      switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
+      case 15:{
+        jj_consume_token(15);
+        droite = facteur();
+gauche = new Mult(gauche, droite);
+        break;
+        }
+      case 16:{
+        jj_consume_token(16);
+        droite = facteur();
+gauche = new Div(gauche, droite);
+        break;
+        }
+      case 17:{
+        jj_consume_token(17);
+        droite = facteur();
+gauche = new Modulo(gauche, droite);
+        break;
+        }
+      default:
+        jj_la1[5] = jj_gen;
+        jj_consume_token(-1);
+        throw new ParseException();
+      }
+    }
+{if ("" != null) return gauche;}
+    throw new Error("Missing return statement in function");
+}
+
   static final public ExpressionA facteur() throws ParseException {ExpressionA expr;
     switch ((jj_ntk==-1)?jj_ntk_f():jj_ntk) {
-    case 9:{
-      jj_consume_token(9);
+    case 18:{
+      jj_consume_token(18);
       expr = expression();
-      jj_consume_token(10);
+      jj_consume_token(19);
 {if ("" != null) return expr;}
       break;
       }
-    case 6:{
-      jj_consume_token(6);
+    case 14:{
+      jj_consume_token(14);
       expr = facteur();
 {if ("" != null) return new Neg(expr);}
+      break;
+      }
+    case 20:{
+      jj_consume_token(20);
+      expr = facteur();
+{if ("" != null) return new Not(expr);}
       break;
       }
     case NOMBRE:{
@@ -118,8 +196,18 @@ gauche = new Div(gauche, droite);
 {if ("" != null) return new Num(Integer.parseInt(token.image));}
       break;
       }
+    case FLOAT:{
+      jj_consume_token(FLOAT);
+{if ("" != null) return new FloatT(Float.parseFloat(token.image));}
+      break;
+      }
+    case BOOLEAN:{
+      jj_consume_token(BOOLEAN);
+{if ("" != null) return new Bool(Boolean.parseBoolean(token.image));}
+      break;
+      }
     default:
-      jj_la1[4] = jj_gen;
+      jj_la1[6] = jj_gen;
       jj_consume_token(-1);
       throw new ParseException();
     }
@@ -136,13 +224,13 @@ gauche = new Div(gauche, droite);
   static public Token jj_nt;
   static private int jj_ntk;
   static private int jj_gen;
-  static final private int[] jj_la1 = new int[5];
+  static final private int[] jj_la1 = new int[7];
   static private int[] jj_la1_0;
   static {
 	   jj_la1_init_0();
 	}
 	private static void jj_la1_init_0() {
-	   jj_la1_0 = new int[] {0x60,0x60,0x180,0x180,0x248,};
+	   jj_la1_0 = new int[] {0x1f80,0x1f80,0x6000,0x6000,0x38000,0x38000,0x144038,};
 	}
 
   /** Constructor with InputStream. */
@@ -163,7 +251,7 @@ gauche = new Div(gauche, droite);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -177,7 +265,7 @@ gauche = new Div(gauche, droite);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   /** Constructor. */
@@ -194,7 +282,7 @@ gauche = new Div(gauche, droite);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -212,7 +300,7 @@ gauche = new Div(gauche, droite);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   /** Constructor with generated Token Manager. */
@@ -228,7 +316,7 @@ gauche = new Div(gauche, droite);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   /** Reinitialise. */
@@ -237,7 +325,7 @@ gauche = new Div(gauche, droite);
 	 token = new Token();
 	 jj_ntk = -1;
 	 jj_gen = 0;
-	 for (int i = 0; i < 5; i++) jj_la1[i] = -1;
+	 for (int i = 0; i < 7; i++) jj_la1[i] = -1;
   }
 
   static private Token jj_consume_token(int kind) throws ParseException {
@@ -288,12 +376,12 @@ gauche = new Div(gauche, droite);
   /** Generate ParseException. */
   static public ParseException generateParseException() {
 	 jj_expentries.clear();
-	 boolean[] la1tokens = new boolean[11];
+	 boolean[] la1tokens = new boolean[21];
 	 if (jj_kind >= 0) {
 	   la1tokens[jj_kind] = true;
 	   jj_kind = -1;
 	 }
-	 for (int i = 0; i < 5; i++) {
+	 for (int i = 0; i < 7; i++) {
 	   if (jj_la1[i] == jj_gen) {
 		 for (int j = 0; j < 32; j++) {
 		   if ((jj_la1_0[i] & (1<<j)) != 0) {
@@ -302,7 +390,7 @@ gauche = new Div(gauche, droite);
 		 }
 	   }
 	 }
-	 for (int i = 0; i < 11; i++) {
+	 for (int i = 0; i < 21; i++) {
 	   if (la1tokens[i]) {
 		 jj_expentry = new int[1];
 		 jj_expentry[0] = i;
