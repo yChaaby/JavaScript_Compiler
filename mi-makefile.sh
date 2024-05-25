@@ -39,6 +39,7 @@ for file in "${files[@]}"; do
 done
 # this "if" statement used to delete .java .class files (added files that we gonna not push everytime )
 if [ $# -eq 1 ]; then
+  rm AST/*.class
   exit 1
 fi
 javac AST/*.java
@@ -47,5 +48,6 @@ javacc Compilateur.jj
 javac *.java
 echo "---- Starting -----"
 java Compilateur
-
+./mi-makefile.sh 1 > t
+rm t
 
