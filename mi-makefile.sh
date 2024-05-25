@@ -41,6 +41,7 @@ done
 if [ $# -eq 1 ]; then
   exit 1
 fi
+javac AST/*.java
 # program launching
 javacc Compilateur.jj
 javac *.java
