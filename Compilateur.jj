@@ -1,40 +1,85 @@
 PARSER_BEGIN(Compilateur)
 import AST.*;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.util.ArrayList;
+import java.util.List;
 import java.io.InputStream;
 
 public class Compilateur {
     public static void main(String args[]) {
         try {
-            System.out.print("Tapez une Expression : ");
-            Compilateur parseur = new Compilateur(System.in);
-            ExpressionA ast = parseur.mainNT();
-            System.out.println("AST calculé : \n" + ast.toAssembly()+"Halt");
+            //System.out.print("Tapez une Expression : ");
+            FileInputStream fis = new FileInputStream("test.js");
+            Compilateur parseur = new Compilateur(fis);
+            Programme programme = parseur.mainNT(); // Changer pour Programme
+            System.out.println("Assembly code  : \n" + programme.toAssembly()+"Halt"); // Modifier pour générer l'assembleur
             System.out.println("C'est bien une expression arithmétique !!");
-        } catch (TokenMgrError e) {
-                    System.out.println("Ceci n'est pas une expression arithm\u00e9tique :"+e);
-                } catch (ParseException e){
-                    System.out.println("Ceci n'est pas une expression arithm\u00e9tique :"+e);
-    }           }
+        }catch (FileNotFoundException e) {
+            System.out.println("Le fichier spécifié n'a pas été trouvé.");
+        }catch (TokenMgrError e) {
+            System.out.println("Ceci n'est pas une expression arithm\u00e9tique :"+e.toString());
+        }catch (ParseException e){
+            System.out.println("Ceci n'est pas une expression arithm\u00e9tique :"+e);
+    }   }
 }
 PARSER_END(Compilateur)
 
-SKIP :
-{ " " | "\t" }
 
 TOKEN :
-{ < NOMBRE: ["1"-"9"] (["0"-"9"])* >
-| < FLOAT: (["0"-"9"])+ "." (["0"-"9"])+ >
-| < BOOLEAN: "True" | "False">
-| < EOL: "\n" >
+{
+      < FLOAT: (("0" | ["1"-"9"] (["0"-"9"])* )? "." (["0"-"9"])+ (("E" | "e") ("+" | "-")? (["0"-"9"])+)? ) | (["0"-"9"])+ (("E" | "e") ("+" | "-")? (["0"-"9"])+)>
+    | < NOMBRE: (["1"-"9"] (["0"-"9"])* | "0") (("E" | "e") ("+" | "-")? (["0"-"9"])+)?>
+    | < BOOLEAN: "True" | "False">
+    | < EOL: ";\n" | ";" >
+    | < NAN: "NaN">
+    | < IMPORT: "import">
+    | < IDENT : (["a"-"z", "A"-"Z", "0"-"9", "/"])+ >
+}
+SKIP :
+{ " " | "\t" | "\n" | < "//" (~["\n", "\r"])* ("\n" | "\r" | "\r\n") > | < "/*" (~["*"])* "*" (~["/", "*"] (~["*"])* "*" )* "/" >}
+
+
+Programme mainNT () :
+{
+    Programme prg;
+}
+{
+    prg=programme() <EOF> { return prg; }
+
+
+}
+Programme programme() :
+{
+    List<Commande> programme = new ArrayList<>();
+    Commande commande;
+}
+{
+    (
+        commande=commande() {
+
+            programme.add(commande);
+
+        }
+    )*
+    {
+            return new Programme(programme);}
+
+}
+Commande commande() :
+{
+    Commande expr;
+    Programme prg;
+}
+{
+       expr=expression() <EOL> { return expr; }
+     | <IMPORT> expr=facteur() <EOL> { return new Import(expr); }
+     | "{" prg=programme() "}" {return new Bloc(prg);}
+
 }
 
-ExpressionA mainNT () :
-{
-    ExpressionA expression;
-}
-{
-    expression=expression() <EOL> { return expression; }
-}
+
+
 ExpressionA expression() :
 {
     ExpressionA gauche, droite;
@@ -42,13 +87,12 @@ ExpressionA expression() :
 {
     gauche=comp() (
               "==" droite=comp()  { gauche = new Egal(gauche, droite); }
-            | ">=" droite=comp() {  gauche = new GrEgNb(gauche, droite); }
+            | ">=" droite=comp()  { gauche = new GrEgNb(gauche, droite); }
             | ">"  droite=comp()  { gauche = new GrStNb(gauche, droite);}
             | "<"  droite=comp()  { gauche = new LoStNb(gauche, droite);}
             | "<=" droite=comp()  { gauche = new LoEqNb(gauche, droite); }
             | "!=" droite=comp()  { gauche = new NotEql(gauche, droite); }
-
-
+            | "&&" droite=comp()  { gauche = new Et(gauche, droite); }
     )*
     { return gauche; }
 }
@@ -84,8 +128,9 @@ ExpressionA facteur() :
 {
       "(" expr=expression() ")" { return expr; }
     | "-" expr=facteur() { return new Neg(expr); }
-    | "!" expr=facteur() { return new Not(expr); }// Construit un nœud not
+    | "!" expr=facteur() { return new Not(expr); }
     | <NOMBRE> { return new Num(Integer.parseInt(token.image));}
     | <FLOAT> { return new FloatT(Float.parseFloat(token.image));}
     | <BOOLEAN> { return new Bool(Boolean.parseBoolean(token.image));}// Construit un nœud Num
+    | <IDENT> { return new Ident(token.image);}// Construit un nœud Num
 }

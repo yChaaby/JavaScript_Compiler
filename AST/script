@@ -1,0 +1,17 @@
+#!/bin/bash
+
+# Specify the output file name
+output_file="operation.java"
+
+# Remove the output file if it already exists
+rm -f "$output_file"
+
+# Loop through all .java files in the current directory
+for file in *.java; do
+    # Append the content of each .java file to the output file
+    cat "$file" >> "$output_file"
+    echo "" >> "$output_file" # Add a newline after each file
+done
+
+echo "All .java files combined into $output_file"
+

@@ -9,13 +9,19 @@ public interface CompilateurConstants {
   /** End of File. */
   int EOF = 0;
   /** RegularExpression Id. */
-  int NOMBRE = 3;
+  int FLOAT = 1;
   /** RegularExpression Id. */
-  int FLOAT = 4;
+  int NOMBRE = 2;
   /** RegularExpression Id. */
-  int BOOLEAN = 5;
+  int BOOLEAN = 3;
   /** RegularExpression Id. */
-  int EOL = 6;
+  int EOL = 4;
+  /** RegularExpression Id. */
+  int NAN = 5;
+  /** RegularExpression Id. */
+  int IMPORT = 6;
+  /** RegularExpression Id. */
+  int IDENT = 7;
 
   /** Lexical state. */
   int DEFAULT = 0;
@@ -23,18 +29,27 @@ public interface CompilateurConstants {
   /** Literal token values. */
   String[] tokenImage = {
     "<EOF>",
+    "<FLOAT>",
+    "<NOMBRE>",
+    "<BOOLEAN>",
+    "<EOL>",
+    "\"NaN\"",
+    "\"import\"",
+    "<IDENT>",
     "\" \"",
     "\"\\t\"",
-    "<NOMBRE>",
-    "<FLOAT>",
-    "<BOOLEAN>",
     "\"\\n\"",
+    "<token of kind 11>",
+    "<token of kind 12>",
+    "\"{\"",
+    "\"}\"",
     "\"==\"",
     "\">=\"",
     "\">\"",
     "\"<\"",
     "\"<=\"",
     "\"!=\"",
+    "\"&&\"",
     "\"+\"",
     "\"-\"",
     "\"*\"",
