@@ -1,9 +1,1 @@
-import malib;
-/// True + False
-/* cgvhjbkn +1 */
-{
-    9-1;
-    x+1;
-
-}
-5*5;
+2*10+x == 3*8;

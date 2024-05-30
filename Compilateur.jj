@@ -9,19 +9,23 @@ import java.io.InputStream;
 public class Compilateur {
     public static void main(String args[]) {
         try {
-            //System.out.print("Tapez une Expression : ");
+            // Ouvre le fichier "test.js" pour lecture
             FileInputStream fis = new FileInputStream("test.js");
+            // Crée une instance du parseur
             Compilateur parseur = new Compilateur(fis);
-            Programme programme = parseur.mainNT(); // Changer pour Programme
-            System.out.println("Assembly code  : \n" + programme.toAssembly()+"Halt"); // Modifier pour générer l'assembleur
+            // Parse le fichier et obtient le programme
+            Programme programme = parseur.mainNT();
+            // Affiche le code assembleur généré
+            System.out.println("Assembly code  : \n" + programme.toAssembly() + "Halt");
             System.out.println("C'est bien une expression arithmétique !!");
-        }catch (FileNotFoundException e) {
+        } catch (FileNotFoundException e) {
             System.out.println("Le fichier spécifié n'a pas été trouvé.");
-        }catch (TokenMgrError e) {
-            System.out.println("Ceci n'est pas une expression arithm\u00e9tique :"+e.toString());
-        }catch (ParseException e){
-            System.out.println("Ceci n'est pas une expression arithm\u00e9tique :"+e);
-    }   }
+        } catch (TokenMgrError e) {
+            System.out.println("Ceci n'est pas une expression arithmétique : " + e.toString());
+        } catch (ParseException e) {
+            System.out.println("Ceci n'est pas une expression arithmétique : " + e);
+        }
+    }
 }
 PARSER_END(Compilateur)
 
@@ -34,103 +38,89 @@ TOKEN :
     | < EOL: ";\n" | ";" >
     | < NAN: "NaN">
     | < IMPORT: "import">
-    | < IDENT : (["a"-"z", "A"-"Z", "0"-"9", "/"])+ >
+    
+    | < SEMICOLON : ";" >
+    //| < EQUAL : "=" >
+    | < IDENT : ["a"-"z"] (["a"-"z", "A"-"Z", "0"-"9", "_"])* >
 }
 SKIP :
 { " " | "\t" | "\n" | < "//" (~["\n", "\r"])* ("\n" | "\r" | "\r\n") > | < "/*" (~["*"])* "*" (~["/", "*"] (~["*"])* "*" )* "/" >}
 
 
-Programme mainNT () :
-{
-    Programme prg;
-}
-{
-    prg=programme() <EOF> { return prg; }
 
 
+Programme mainNT() : {
+    Programme programme;
+} {
+    programme=programme() <EOF> { return programme; }
 }
-Programme programme() :
-{
-    List<Commande> programme = new ArrayList<>();
+
+Programme programme() : {
+    List<Commande> programme = new ArrayList<Commande>();
     Commande commande;
-}
-{
+} {
     (
-        commande=commande() {
-
-            programme.add(commande);
-
-        }
-    )*
-    {
-            return new Programme(programme);}
-
-}
-Commande commande() :
-{
-    Commande expr;
-    Programme prg;
-}
-{
-       expr=expression() <EOL> { return expr; }
-     | <IMPORT> expr=facteur() <EOL> { return new Import(expr); }
-     | "{" prg=programme() "}" {return new Bloc(prg);}
-
+        commande=commande() { programme.add(commande); }
+    )* {
+        return new Programme(programme);
+    }
 }
 
-
-
-ExpressionA expression() :
-{
-    ExpressionA gauche, droite;
-}
-{
-    gauche=comp() (
-              "==" droite=comp()  { gauche = new Egal(gauche, droite); }
-            | ">=" droite=comp()  { gauche = new GrEgNb(gauche, droite); }
-            | ">"  droite=comp()  { gauche = new GrStNb(gauche, droite);}
-            | "<"  droite=comp()  { gauche = new LoStNb(gauche, droite);}
-            | "<=" droite=comp()  { gauche = new LoEqNb(gauche, droite); }
-            | "!=" droite=comp()  { gauche = new NotEql(gauche, droite); }
-            | "&&" droite=comp()  { gauche = new Et(gauche, droite); }
-    )*
-    { return gauche; }
-}
-
-ExpressionA comp() :
-{
-    ExpressionA gauche, droite;
-}
-{
-    gauche=terme() (
-         "+" droite=terme() { gauche = new Plus(gauche, droite); }
-        | "-" droite=terme() { gauche = new Moins(gauche, droite); }
-         )*
-    { return gauche; }
-}
-ExpressionA terme () :
-{
-    ExpressionA gauche, droite;
-}
-{
-    gauche=facteur() (
-          "*" droite=facteur() { gauche = new Mult(gauche, droite); }
-        | "/" droite=facteur() { gauche = new Div(gauche, droite);}
-        | "%" droite=facteur() { gauche = new Modulo(gauche, droite); }
-    )*
-    { return gauche; }
-}
-
-ExpressionA facteur() :
-{
+Commande commande() : {
+    Token id;
     ExpressionA expr;
+    Programme prg;
+} {
+      LOOKAHEAD(2) id=<IDENT> "=" expr=expression() <EOL> { return new Assignment(id.image, expr); } // le lockhead pour eviter les conflit !!
+    | expr=expression() <EOL> { return expr; }
+    | <IMPORT> expr=facteur() <EOL> { return new Import(expr); }
+    | "{" prg=programme() "}" { return new Bloc(prg); }
 }
-{
-      "(" expr=expression() ")" { return expr; }
-    | "-" expr=facteur() { return new Neg(expr); }
-    | "!" expr=facteur() { return new Not(expr); }
-    | <NOMBRE> { return new Num(Integer.parseInt(token.image));}
-    | <FLOAT> { return new FloatT(Float.parseFloat(token.image));}
-    | <BOOLEAN> { return new Bool(Boolean.parseBoolean(token.image));}// Construit un nœud Num
-    | <IDENT> { return new Ident(token.image);}// Construit un nœud Num
+
+ExpressionA expression() : {
+    ExpressionA gauche, droite;
+} {
+     gauche=comp() (
+        "==" droite=comp() { gauche = new Egal(gauche, droite); }
+        | ">=" droite=comp() { gauche = new GrEgNb(gauche, droite); }
+        | ">"  droite=comp() { gauche = new GrStNb(gauche, droite); }
+        | "<"  droite=comp() { gauche = new LoStNb(gauche, droite); }
+        | "<=" droite=comp() { gauche = new LoEqNb(gauche, droite); }
+        | "!=" droite=comp() { gauche = new NotEql(gauche, droite); }
+        | "&&" droite=comp() { gauche = new Et(gauche, droite); }
+    )* {
+        return gauche;
+    }
+}
+
+ExpressionA comp() : {
+    ExpressionA gauche, droite;
+} {
+    gauche=terme() (
+        "+" droite=terme() { gauche = new Plus(gauche, droite); }
+        | "-" droite=terme() { gauche = new Moins(gauche, droite); }
+    )* {
+        return gauche;
+    }
+}
+
+ExpressionA terme() : {
+    ExpressionA gauche, droite;
+} {
+    gauche=facteur() (
+        "*" droite=facteur() { gauche = new Mult(gauche, droite); }
+        | "/" droite=facteur() { gauche = new Div(gauche, droite); }
+        | "%" droite=facteur() { gauche = new Modulo(gauche, droite); }
+    )* {
+        return gauche;
+    }
+}
+
+ExpressionA facteur() : {
+    ExpressionA expr;
+} {
+    <NOMBRE> { return new Num(Integer.parseInt(token.image)); }
+  | <FLOAT> { return new FloatT(Float.parseFloat(token.image)); }
+  | <BOOLEAN> { return new Bool(Boolean.parseBoolean(token.image)); }
+  | <IDENT> { return new Ident(token.image);}
 }
