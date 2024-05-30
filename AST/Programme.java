@@ -15,7 +15,10 @@ public class Programme extends AST {
     public String toAssembly() {
         String assembly = "";
         for (Commande commande : commandes) {
-            assembly = assembly+commande.toAssembly()+"Drop\n";
+            assembly = assembly+commande.toAssembly();
+            if(commande instanceof ExpressionA){
+                assembly+="Drop"+"\n";
+            }
 
         }
         return assembly;

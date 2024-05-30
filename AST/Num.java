@@ -13,4 +13,9 @@ public class Num extends ExpressionA {
   public String toAssembly() {
     return "CsteNb " + num+"\n";
   }
+
+  @Override
+    public Object evaluate() {
+        return num;
+    }
 }

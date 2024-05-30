@@ -19,4 +19,9 @@ public class FloatT extends ExpressionA {
     public String toAssembly() {
         return "CsteNb " + this.arg + "\n";
     }
+
+    @Override
+    public Object evaluate() {
+        return this.arg;
+    }
 }

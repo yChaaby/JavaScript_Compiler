@@ -14,4 +14,14 @@ public class Not extends ExpressionA {
     public String toAssembly() {
         return  (arg.toAssembly())+"Not\n";
     }
+
+    @Override
+    public Object evaluate() {
+        Object value = arg.evaluate();
+        if (value instanceof Boolean) {
+            return !(Boolean) value;
+        } else {
+            throw new RuntimeException("Invalid type for Not operation: " + value.getClass().getName());
+        }
+    }
 }

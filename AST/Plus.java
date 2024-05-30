@@ -8,4 +8,10 @@ public String symbole() {return "plus";};
 public String toAssembly() {
     return gauche.toAssembly() + droite.toAssembly() + "AddiNb\n";
 }
+
+
+@Override
+    public Object evaluate() {
+        return (Integer) gauche.evaluate() + (Integer) droite.evaluate();
+    }
 }

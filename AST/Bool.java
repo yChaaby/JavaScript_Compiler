@@ -13,4 +13,9 @@ public class Bool extends ExpressionA {
     public String toAssembly() {
         return "CsteBo " + num+"\n";
     }
+
+     @Override
+    public Object evaluate() {
+        return num;
+    }
 }

@@ -9,6 +9,10 @@ public class Ident extends ExpressionA{
     }
 
     public String toAssembly() {
-        return  "" ;
+        return  "GetVar " + this.arg + "\n";
+    }
+    @Override
+    public Object evaluate() {
+        return SymbolTable.getVariable(arg);
     }
 }
