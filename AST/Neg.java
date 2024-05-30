@@ -14,4 +14,16 @@ public String toString() {
   public String toAssembly() {
     return  (arg.toAssembly())+"NegaNb\n";
   }
+  @Override
+    public Object evaluate() {
+        Object value = arg.evaluate();
+
+        if (value instanceof Integer) {
+            return -(Integer) value;
+        } else if (value instanceof Float) {
+            return -(Float) value;
+        } else {
+            throw new RuntimeException("Unsupported type for Neg operation: " + value.getClass().getName());
+        }
+    }
 }	
