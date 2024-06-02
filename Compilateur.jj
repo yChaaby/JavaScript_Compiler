@@ -19,11 +19,11 @@ public class Compilateur {
             System.out.println("Assembly code  : \n" + programme.toAssembly() + "Halt");
             System.out.println("C'est bien une expression arithmétique !!");
         } catch (FileNotFoundException e) {
-            System.out.println("Le fichier spécifié n'a pas été trouvé.");
+            System.out.println("Le fichier spécifié n'a pas été trouvé."+ e.toString());
         } catch (TokenMgrError e) {
             System.out.println("Ceci n'est pas une expression arithmétique : " + e.toString());
         } catch (ParseException e) {
-            System.out.println("Ceci n'est pas une expression arithmétique : " + e);
+            System.out.println("Ceci n'est pas une expression arithmétique : " +  e.toString());
         }
     }
 }
@@ -33,15 +33,18 @@ TOKEN :
 {
       < FLOAT: (("0" | ["1"-"9"] (["0"-"9"])* )? "." (["0"-"9"])+ (("E" | "e") ("+" | "-")? (["0"-"9"])+)? ) | (["0"-"9"])+ (("E" | "e") ("+" | "-")? (["0"-"9"])+)>
     | < NOMBRE: (["1"-"9"] (["0"-"9"])* | "0") (("E" | "e") ("+" | "-")? (["0"-"9"])+)?>
-    | < BOOLEAN: "True" | "False">
+    | < BOOLEAN: "true" | "false">
     | < NAN: "NaN">
+    | < SEMICOLON: ";" >
     | < IMPORT: "import">
+    | < FUNCTION: "function">
     | < IF: "if" >
+    | < RETURN: "return" >
+    | < UNDEFINED: "undefined" >
     | < ELSE: "else" >
     | < DO: "do" >
     | < WHILE: "while" >
-    | < EOL: ";\n" | ";" >
-    | < SEMICOLON: ";" >
+    | < EOL: ";" | ";\n" >
     | < ASSIGN: "=" >
     | < PLUS: "+" >
     | < MINUS: "-" >
@@ -51,7 +54,7 @@ TOKEN :
     | < RPAREN: ")" >
     | < LBRACE: "{" >
     | < RBRACE: "}" >
-    | < IDENT: (["a"-"z"])+ (["a"-"z", "A"-"Z", "0"-"9", "_"])* >
+    | < IDENT: (["a"-"z", "A"-"Z"])+ (["a"-"z", "A"-"Z", "0"-"9", "_"])* >
 }
 
 SKIP :
@@ -79,12 +82,16 @@ Commande commande() : {
     ExpressionA expr;
     Commande cmd1, cmd2;
     Programme prg;
+    ArgsDeclaration args;
+
 } {
     LOOKAHEAD(2) id=<IDENT> "=" expr=expression() <EOL> { return new Assignment(id.image, expr); }
     | expr=expression() <EOL> { return expr; }
+    | <RETURN> expr=expression() <EOL> {return new Return(expr);}
     | <IMPORT> expr=facteur() <EOL> { return new Import(expr); }
+    | <FUNCTION> id=<IDENT> <LPAREN> args=functionDecs() <RPAREN> cmd1=commande() {return new FunctionDec(id.image,args,cmd1);}
     | <LBRACE> prg=programme() <RBRACE> { return new Bloc(prg); }
-    | <EOL> {return new EmptyCommand();}
+    | <EOL> { return new EmptyCommand(); }
     | <IF> <LPAREN> expr=expression() <RPAREN> cmd1=commande() <ELSE> cmd2=commande() { return new IfElseCommand(expr, cmd1, cmd2); }
     | <DO> cmd1=commande() <WHILE> <LPAREN> expr=expression() <RPAREN> <EOL> { return new DoWhileCommand(cmd1, expr); }
 }
@@ -93,7 +100,7 @@ ExpressionA expression() : {
     ExpressionA gauche, droite;
 } {
     gauche=comp() (
-        "=="  droite=comp() { gauche = new Egal(gauche, droite); }
+        "==" droite=comp() { gauche = new Egal(gauche, droite); }
         | ">=" droite=comp() { gauche = new GrEgNb(gauche, droite); }
         | ">" droite=comp() { gauche = new GrStNb(gauche, droite); }
         | "<" droite=comp() { gauche = new LoStNb(gauche, droite); }
@@ -120,7 +127,7 @@ ExpressionA terme() : {
     ExpressionA gauche, droite;
 } {
     gauche=facteur() (
-          "*" droite=facteur() { gauche = new Mult(gauche, droite); }
+        "*" droite=facteur() { gauche = new Mult(gauche, droite); }
         | "/" droite=facteur() { gauche = new Div(gauche, droite); }
         | "%" droite=facteur() { gauche = new Modulo(gauche, droite); }
     )* {
@@ -130,9 +137,45 @@ ExpressionA terme() : {
 
 ExpressionA facteur() : {
     ExpressionA expr;
+    FunctionArguments lesArgs;
+    Token id;
 } {
-    <NOMBRE> { return new Num(Integer.parseInt(token.image)); }
+    LOOKAHEAD(2) id=<IDENT> "(" lesArgs=functionArgs() ")"  { return new FunctionCall(id.image, lesArgs); }
+  | "-" expr=facteur() { return new Neg(expr); }
+  | "!" expr=facteur() { return new Not(expr); }
+  | "(" expr=expression() ")" { return expr; }
+  | <NOMBRE> { return new Num(Integer.parseInt(token.image)); }
   | <FLOAT> { return new FloatT(Float.parseFloat(token.image)); }
   | <BOOLEAN> { return new Bool(Boolean.parseBoolean(token.image)); }
   | <IDENT> { return new Ident(token.image); }
+  | <UNDEFINED> { return new Undefined(); }
 }
+
+FunctionArguments functionArgs() : {
+    List<ExpressionA> lesArgs = new ArrayList<ExpressionA>();
+    ExpressionA AnArg;
+} {
+    (
+        AnArg=expression() { lesArgs.add(AnArg); }
+        ( "," AnArg=expression() { lesArgs.add(AnArg); } )*
+    )? {
+        return new FunctionArguments(lesArgs);
+    }
+}
+ArgsDeclaration functionDecs() : {
+    List<String> lesArgsDec = new ArrayList<String>();
+    Token AnArg;
+} {
+    (
+        AnArg= <IDENT> { lesArgsDec.add(AnArg.image); }
+        ( "," AnArg=<IDENT> { lesArgsDec.add(AnArg.image); } )*
+    )? {
+        return new ArgsDeclaration(lesArgsDec);
+    }
+}
+
+
+
+
+
+

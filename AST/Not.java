@@ -12,7 +12,15 @@ public class Not extends ExpressionA {
         return String.format("Not(%1$s)", arg.toString());
     }
     public String toAssembly() {
-        return  (arg.toAssembly())+"Not\n";
+        String arg = this.arg.toAssembly();
+        if(this.arg instanceof Num || this.arg instanceof FloatT){
+            arg += "NbToBo\n";
+        }else if(this.arg instanceof Undefined){
+            arg += "Drop\nCsteBo false\n";
+        }else{
+            arg += "TypeOf\nCase 3\nJump 15\nNoop\nNoop\nNbToBo\nJump 11\nNoop\nError\nNoop\nNoop\nDrop\nCsteBo false\nJump 4\nError\nNoop\nNoop\nError\n";
+        }
+        return  (arg)+"Not\n";
     }
 
     @Override
