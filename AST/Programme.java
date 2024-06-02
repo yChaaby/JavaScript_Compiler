@@ -1,6 +1,8 @@
 package AST;
+
 import java.util.List;
 import java.util.ArrayList;
+
 public class Programme extends AST {
     public List<Commande> commandes;
 
@@ -18,7 +20,9 @@ public class Programme extends AST {
             assembly = assembly+commande.toAssembly();
             if(commande instanceof ExpressionA){
                 assembly+="Drop"+"\n";
+                //assembly+=commande.getClass().getName();
             }
+
 
         }
         return assembly;
