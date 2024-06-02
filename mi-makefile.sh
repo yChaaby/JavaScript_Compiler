@@ -25,13 +25,13 @@ for file in "${files[@]}"; do
         echo "$file deleted."
     else
       printf Clearing
-      sleep 0.5
+      sleep 0.2
       printf .
-      sleep 0.5
+      sleep 0.2
       printf .
-      sleep 0.5
+      sleep 0.2
       printf .
-      sleep 0.5
+      sleep 0.2
       printf .
       clear
         break

@@ -10,7 +10,23 @@ public class Div extends ExpressionA_Binaire {
         return "div";
     }
     public String toAssembly() {
-        return gauche.toAssembly() + droite.toAssembly() + "DivNb\n";
+        String gauche = this.gauche.toAssembly();
+        String droite = this.droite.toAssembly();
+        if(this.gauche instanceof Bool){
+            gauche += "BoToNb\n";
+        }else if(this.gauche instanceof Undefined){
+            gauche += "Drop\nCsteNb NaN\n";
+        }else{
+            gauche += "TypeOf\nCase 3\nBoToNb\nNoop\nNoop\nJump 12\nNoop\nNoop\nError\nNoop\nNoop\nDrop\nCsteNb NaN\nJump 4\nError\nNoop\nNoop\nError\n";
+        }
+        if(this.droite instanceof Bool){
+            droite += "BoToNb\n";
+        }else if(this.gauche instanceof Undefined){
+            droite += "Drop\nCsteNb NaN\n";
+        }else{
+            droite += "TypeOf\nCase 3\nBoToNb\nNoop\nNoop\nJump 12\nNoop\nNoop\nError\nNoop\nNoop\nDrop\nCsteNb NaN\nJump 4\nError\nNoop\nNoop\nError\n";
+        }
+        return gauche + droite + "DivNb\n";
     }
 
     @Override
