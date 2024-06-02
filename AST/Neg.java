@@ -5,6 +5,7 @@ public class Neg extends ExpressionA {
 public ExpressionA arg;
 
 public Neg(ExpressionA arg) {
+
   this.arg = arg;
 }
 
@@ -12,7 +13,15 @@ public String toString() {
   return String.format("neg(%1$s)", arg.toString());
 }
   public String toAssembly() {
-    return  (arg.toAssembly())+"NegaNb\n";
+    String arg = this.arg.toAssembly();
+      if(this.arg instanceof Bool){
+          arg += "BoToNb\n";
+      }else if(this.arg instanceof Undefined){
+          arg += "Drop\nCsteNb NaN\n";
+      }else{
+          arg += "TypeOf\nCase 3\nBoToNb\nNoop\nNoop\nJump 12\nNoop\nNoop\nError\nNoop\nNoop\nDrop\nCsteNb NaN\nJump 4\nError\nNoop\nNoop\nError\n";
+      }
+    return  (arg)+"NegaNb\n";
   }
   @Override
     public Object evaluate() {

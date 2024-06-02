@@ -9,8 +9,27 @@ public class Et extends ExpressionA_Binaire {
     public String symbole() {
         return "Et";
     }
+
     public String toAssembly() {
-        return gauche.toAssembly() +"ConJmp "+Tools.countNewLines(droite.toAssembly())+"\n"+ droite.toAssembly() + "Jump 2\n"+"CstBo False\n";
+        String gauche = this.gauche.toAssembly();
+        String droite = this.droite.toAssembly();
+        if(this.gauche instanceof Num || this.gauche instanceof FloatT){
+            gauche += "NbToBo\n";
+        }else if(this.gauche instanceof Undefined){
+            gauche += "Drop\nCsteBo false\n";
+        }else{
+            gauche += "TypeOf\nCase 3\nJump 15\nNoop\nNoop\nNbToBo\nJump 11\nNoop\nError\nNoop\nNoop\nDrop\nCsteBo false\nJump 4\nError\nNoop\nNoop\nError\n";
+        }
+
+        if(this.droite instanceof Num || this.droite instanceof FloatT){
+            droite += "NbToBo\n";
+        }else if(this.gauche instanceof Undefined){
+            droite += "Drop\nCsteBo false\n";
+        }else{
+            droite += "TypeOf\nCase 3\nJump 15\nNoop\nNoop\nNbToBo\nJump 11\nNoop\nError\nNoop\nNoop\nDrop\nCsteBo false\nJump 4\nError\nNoop\nNoop\nError\n";
+        }
+
+        return gauche +"ConJmp "+(Tools.countNewLines(droite)+1)+"\n"+ droite + "Jump 1\n"+"CstBo false\n";
     }
 
     @Override

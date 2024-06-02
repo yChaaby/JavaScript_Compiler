@@ -1,7 +1,7 @@
 package AST;
 
 // Classe pour représenter une affectation de variable
-public class Assignment extends ExpressionA {
+public class Assignment extends Commande {
     private String varName;
     private ExpressionA expression;
 
