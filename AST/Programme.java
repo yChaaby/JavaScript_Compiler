@@ -17,13 +17,16 @@ public class Programme extends AST {
     public String toAssembly() {
         String assembly = "";
         for (Commande commande : commandes) {
-            assembly = assembly+commande.toAssembly();
+            if(commande instanceof Let){
+                assembly = commande.toAssembly()+assembly;
+            }else{
+                assembly = assembly+commande.toAssembly();
+            }
+
             if(commande instanceof ExpressionA){
                 assembly+="Drop"+"\n";
                 //assembly+=commande.getClass().getName();
             }
-
-
         }
         return assembly;
     }
