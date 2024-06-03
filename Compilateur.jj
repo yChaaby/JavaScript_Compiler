@@ -17,13 +17,13 @@ public class Compilateur {
             Programme programme = parseur.mainNT();
             // Affiche le code assembleur généré
             System.out.println("Assembly code  : \n" + programme.toAssembly() + "Halt");
-            System.out.println("C'est bien une expression arithmétique !!");
+            System.out.println("C'est bien un programme correct !!");
         } catch (FileNotFoundException e) {
             System.out.println("Le fichier spécifié n'a pas été trouvé."+ e.toString());
         } catch (TokenMgrError e) {
-            System.out.println("Ceci n'est pas une expression arithmétique : " + e.toString());
+            System.out.println("Le programme contient des erreur : " + e.toString());
         } catch (ParseException e) {
-            System.out.println("Ceci n'est pas une expression arithmétique : " +  e.toString());
+            System.out.println("Le programme contient des erreur : " +  e.toString());
         }
     }
 }
@@ -34,6 +34,9 @@ TOKEN :
       < FLOAT: (("0" | ["1"-"9"] (["0"-"9"])* )? "." (["0"-"9"])+ (("E" | "e") ("+" | "-")? (["0"-"9"])+)? ) | (["0"-"9"])+ (("E" | "e") ("+" | "-")? (["0"-"9"])+)>
     | < NOMBRE: (["1"-"9"] (["0"-"9"])* | "0") (("E" | "e") ("+" | "-")? (["0"-"9"])+)?>
     | < BOOLEAN: "true" | "false">
+    | <TRY: "try">
+    | <CATCH: "catch">
+    | <THROW: "throw">
     | < NAN: "NaN">
     | < SEMICOLON: ";" >
     | < IMPORT: "import">
@@ -44,6 +47,7 @@ TOKEN :
     | < ELSE: "else" >
     | < DO: "do" >
     | < WHILE: "while" >
+    | < LET: "let" >
     | < EOL: ";" | ";\n" >
     | < ASSIGN: "=" >
     | < PLUS: "+" >
@@ -81,7 +85,7 @@ Commande commande() : {
     Token id;
     ExpressionA expr;
     Commande cmd1, cmd2;
-    Programme prg;
+    Programme prg,prg2;
     ArgsDeclaration args;
 
 } {
@@ -92,8 +96,11 @@ Commande commande() : {
     | <FUNCTION> id=<IDENT> <LPAREN> args=functionDecs() <RPAREN> cmd1=commande() {return new FunctionDec(id.image,args,cmd1);}
     | <LBRACE> prg=programme() <RBRACE> { return new Bloc(prg); }
     | <EOL> { return new EmptyCommand(); }
+    | <LET> id=<IDENT> <EOL> { return new Let(id.image); }
     | <IF> <LPAREN> expr=expression() <RPAREN> cmd1=commande() <ELSE> cmd2=commande() { return new IfElseCommand(expr, cmd1, cmd2); }
     | <DO> cmd1=commande() <WHILE> <LPAREN> expr=expression() <RPAREN> <EOL> { return new DoWhileCommand(cmd1, expr); }
+    | <TRY> <LBRACE> prg=programme() <RBRACE> <CATCH> <LPAREN> id=<IDENT> <RPAREN> <LBRACE> prg2=programme() <RBRACE> { return new Trycatch(prg,id.image,prg2);}
+    | <THROW> expr=expression() <EOL> {return new Throw(expr);}
 }
 
 ExpressionA expression() : {

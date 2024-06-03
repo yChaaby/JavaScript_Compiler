@@ -3,7 +3,7 @@ package AST;
 // Classe pour représenter une variable
 public class DoWhileCommand extends Commande {
     private ExpressionA cond;
-    private Commande cmd;
+    public Commande cmd;
 
     public DoWhileCommand(Commande cmd, ExpressionA expr) {
         this.cmd=cmd;
