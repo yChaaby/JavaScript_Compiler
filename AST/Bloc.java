@@ -1,6 +1,6 @@
 package AST;
 public class Bloc extends Commande {
-    Programme prg;
+    public Programme prg;
     public Bloc(Programme prg) {
         this.prg = prg;
     }
