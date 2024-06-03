@@ -3,11 +3,14 @@ package AST;
 import java.util.List;
 import java.util.ArrayList;
 
+
 public class Programme extends AST {
     public List<Commande> commandes;
+    public List<String> vars;
 
     public Programme(List<Commande> commandes) {
         this.commandes = commandes;
+        this.vars = new ArrayList<>();
         //System.out.println("prg cree");
     }
     public Programme(Programme a){

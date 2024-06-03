@@ -34,6 +34,9 @@ TOKEN :
       < FLOAT: (("0" | ["1"-"9"] (["0"-"9"])* )? "." (["0"-"9"])+ (("E" | "e") ("+" | "-")? (["0"-"9"])+)? ) | (["0"-"9"])+ (("E" | "e") ("+" | "-")? (["0"-"9"])+)>
     | < NOMBRE: (["1"-"9"] (["0"-"9"])* | "0") (("E" | "e") ("+" | "-")? (["0"-"9"])+)?>
     | < BOOLEAN: "true" | "false">
+    | <TRY: "try">
+    | <CATCH: "catch">
+    | <THROW: "throw">
     | < NAN: "NaN">
     | < SEMICOLON: ";" >
     | < IMPORT: "import">
@@ -82,7 +85,7 @@ Commande commande() : {
     Token id;
     ExpressionA expr;
     Commande cmd1, cmd2;
-    Programme prg;
+    Programme prg,prg2;
     ArgsDeclaration args;
 
 } {
@@ -96,6 +99,8 @@ Commande commande() : {
     | <LET> id=<IDENT> <EOL> { return new Let(id.image); }
     | <IF> <LPAREN> expr=expression() <RPAREN> cmd1=commande() <ELSE> cmd2=commande() { return new IfElseCommand(expr, cmd1, cmd2); }
     | <DO> cmd1=commande() <WHILE> <LPAREN> expr=expression() <RPAREN> <EOL> { return new DoWhileCommand(cmd1, expr); }
+    | <TRY> <LBRACE> prg=programme() <RBRACE> <CATCH> <LPAREN> id=<IDENT> <RPAREN> <LBRACE> prg2=programme() <RBRACE> { return new Trycatch(prg,id.image,prg2);}
+    | <THROW> expr=expression() <EOL> {return new Throw(expr);}
 }
 
 ExpressionA expression() : {

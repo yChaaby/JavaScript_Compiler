@@ -1,7 +1,7 @@
 package AST;
 
 public class Let extends Commande {
-    private String varName;
+    public String varName;
 
     public Let(String varName) {
         this.varName = varName;
